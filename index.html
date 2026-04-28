@@ -58,18 +58,9 @@
     </style>
     <script src="config.js"></script>
     <script>
-        // Fallback Database in case config.js is not loaded
+        // Fallback Database in case config.js is missing
         const DEFAULT_CONFIG = {
-            "CI Extra Plus": { abbr: "CX", desc: "ออมเงิน : ชดเชยโรคร้าย+วงเงินพิเศษ", icon: "fas fa-shield-heart", color: "text-rose-500", bg: "bg-rose-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CX', '20CX'] },
-            "Life Protector 20": { abbr: "LPB", desc: "เปลี่ยนทุนประกัน เป็นบำนาญ", icon: "fas fa-piggy-bank", color: "text-emerald-500", bg: "bg-emerald-100", uiMode: "TABLE", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
-            "Supreme Life Protector": { abbr: "SLPA", desc: "เปลี่ยนทุนประกัน เป็นบำนาญ", icon: "fas fa-piggy-bank", color: "text-emerald-500", bg: "bg-emerald-100", uiMode: "TABLE", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
-            "Signature Legacy": { abbr: "SLB", desc: "แผนมรดก ลูกค้ามูลค่าสูง", icon: "fas fa-crown", color: "text-amber-500", bg: "bg-amber-100", uiMode: "TABLE", defaultSum: 5000000, actionBtnText: "ตารางมูลค่า", planOptions: ['5SLB', '10SLB'] },
-            "Convertable Term": { abbr: "TLA", desc: "จองสิทธิ เปลี่ยนแบบประกันได้", icon: "fas fa-umbrella", color: "text-blue-500", bg: "bg-blue-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: [] },
-            "Century Life + TPD": { abbr: "CLA", desc: "แผนมรดก 100 ปี + TPD", icon: "fas fa-gem", color: "text-amber-500", bg: "bg-amber-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CL', '20CL', '60CL', '90CL'] },
-            "3D Health Excellence": { abbr: "3D", desc: "ประกันสุขภาพ ที่เข้าใจทุกช่วงชีวิต", icon: "fas fa-hand-holding-medical", color: "text-teal-500", bg: "bg-teal-100", uiMode: "POPUP_3D", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CL', '20CL', '60CL', '90CL'] },
-            "Whole Life Extra": { abbr: "WXN", desc: "สินทรัพย์กระแสเงินสด", icon: "fas fa-money-bill-trend-up", color: "text-indigo-500", bg: "bg-indigo-100", uiMode: "TABLE_CASHFLOW", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: ['WXN10', 'WXN15'] },
-            "24 TX": { abbr: "TX", desc: "สินทรัพย์กระแสเงินสด", icon: "fas fa-money-bill-trend-up", color: "text-indigo-500", bg: "bg-indigo-100", uiMode: "TABLE_CASHFLOW", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
-            "868 / 818 Elite Saving": { abbr: "Elite", desc: "สินทรัพย์กระแสเงินสด", icon: "fas fa-money-bill-trend-up", color: "text-indigo-500", bg: "bg-indigo-100", uiMode: "TABLE_CASHFLOW", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] }
+            "Life Protector 20": { abbr: "LPB", desc: "เปลี่ยนทุนประกัน เป็นบำนาญ", icon: "fas fa-piggy-bank", color: "text-emerald-500", bg: "bg-emerald-100", uiMode: "TABLE", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] }
         };
         const ACTIVE_DB = typeof INSURANCE_CONFIG !== 'undefined' ? INSURANCE_CONFIG : DEFAULT_CONFIG;
     </script>
@@ -274,7 +265,7 @@
             const container = document.getElementById('planSelectionContainer');
             
             if(container && config.planOptions && config.planOptions.length > 0) {
-                wrapper.style.display = 'block'; // แสดงกล่องแผน
+                wrapper.style.display = 'block';
                 container.className = config.planOptions.length > 2 ? 'grid grid-cols-2 gap-2 w-full' : 'flex gap-2 w-full';
                 container.innerHTML = config.planOptions.map(p => {
                     const isTarget = p === currentPlan;
@@ -282,22 +273,21 @@
                     return `<button onclick="setPlan('${p}')" class="${btnClass}">${p}</button>`;
                 }).join('');
             } else {
-                // ลบกล่องเลือกแผนทิ้งไปเลยสำหรับแผนที่ไม่มีตัวเลือกย่อย
                 wrapper.style.display = 'none';
                 if (container) container.innerHTML = ''; 
             }
             calculate('sum'); 
         }
 
-        // ================= ENGINE CALCULATE =================
         function calculate(source = currentMode) { 
             currentMode = source;
             const config = getActiveConfig();
             const age = parseInt(document.getElementById('ageInput').value) || 0; 
             
             let baseRate = 0, hxPrem = 0; 
-            let planKey = currentPlan || currentAppPlan; // ใช้ชื่อแผน หรือ ชื่อแอปหลัก
+            let planKey = currentPlan || currentAppPlan;
             
+            // รอรับข้อมูลจากฐานข้อมูล
             if(typeof BASE_RATES !== 'undefined' && BASE_RATES[planKey] && BASE_RATES[planKey][currentGender]) {
                 baseRate = BASE_RATES[planKey][currentGender][age] || 0;
             }
@@ -365,7 +355,6 @@
             
             document.getElementById('headerTitleText').innerText = planName;
 
-            // 1. จัดการหน้าตา Cash Flow และ 3D Health
             const isCashFlow = config.uiMode.includes('CASHFLOW');
             const is3D = config.uiMode === 'POPUP_3D';
             
@@ -377,20 +366,19 @@
                 ? `<i class="fas fa-shield-halved text-emerald-500"></i> ทุนหลัก CL (บาท)`
                 : `<i class="fas fa-shield-halved text-emerald-500"></i> วงเงินคุ้มครอง (บาท)`;
 
-            // 2. เปลี่ยนคำที่ปุ่ม Action
             document.getElementById('mainActionBtn').innerHTML = `<i class="fas ${config.uiMode.includes('TABLE') ? 'fa-table' : 'fa-file-alt'} text-lg"></i> ${config.actionBtnText}`;
             
-            // 3. เซ็ตทุนเริ่มต้น
             document.getElementById('sumInsuredInput').value = formatNum(config.defaultSum);
             
-            // 4. เซ็ตเมนูย่อยของแผน
+            const planSelectionWrapper = document.getElementById('planSelectionWrapper');
             if(config.planOptions && config.planOptions.length > 0) {
+                planSelectionWrapper.style.display = 'block';
                 setPlan(config.planOptions[0]);
             } else {
-                setPlan(''); // สำหรับแผนที่ไม่มีตัวเลือก มันจะไปสั่งลบกล่องทิ้งที่ฟังก์ชัน setPlan ให้
+                planSelectionWrapper.style.display = 'none';
+                currentPlan = '';
             }
 
-            // 5. ปุ่ม Quick Pills
             const isHighValue = config.defaultSum >= 5000000;
             const sumPillsHtml = isHighValue 
                 ? `<button onclick="setQuickSum(500000)" class="quick-pill">5 แสน</button><button onclick="setQuickSum(1000000)" class="quick-pill">1 ล้าน</button><button onclick="setQuickSum(5000000)" class="quick-pill">5 ล้าน</button><button onclick="setQuickSum(10000000)" class="quick-pill">10 ล้าน</button>`
@@ -406,7 +394,6 @@
             calculate('sum'); 
         }
 
-        // เริ่มต้นแอป
         window.onload = () => { selectAppPlan("Life Protector 20"); };
     </script>
 </body>
