@@ -37,8 +37,7 @@
         .quick-pill:hover { background-color: rgba(255,255,255,0.8); color: #334155; }
         .quick-pill:active { background-color: #ffffff; color: #2563eb; transform: scale(0.92); }
         
-        @keyframes bgFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .btn-primary { background: linear-gradient(135deg, #1e3a8a, #3b82f6, #1e3a8a); background-size: 200% 200%; animation: bgFlow 6s ease infinite; color: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #1e3a8a, #3b82f6, #1e3a8a); background-size: 200% 200%; color: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); transition: all 0.2s; }
         .btn-primary:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
 
         .modal-overlay { background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(10px); transition: opacity 0.3s ease; opacity: 0; pointer-events: none; visibility: hidden; z-index: 1000; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
@@ -53,33 +52,14 @@
         .nav-item { position: relative; transition: all 0.3s; cursor: pointer; }
         .nav-item.active { color: #2563eb; transform: translateY(-2px); }
         .nav-item.active::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background-color: #2563eb; border-radius: 50%; }
-        @keyframes gold-shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        .text-shine-gold { background: linear-gradient(120deg, #fef08a 20%, #ffffff 40%, #ffffff 60%, #fef08a 80%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: gold-shine 3s linear infinite; }
+        .text-shine-gold { background: linear-gradient(120deg, #fef08a 20%, #ffffff 40%, #ffffff 60%, #fef08a 80%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; }
     </style>
-    <!-- โหลดข้อมูลจาก config.js -->
     <script src="config.js"></script>
-    <script>
-        // Fallback Database in case config.js is not loaded
-        const DEFAULT_CONFIG = {
-            "CI Extra Plus": { abbr: "CX", desc: "ออมเงิน : ชดเชยโรคร้าย+วงเงินพิเศษ", icon: "fas fa-shield-heart", color: "text-rose-500", bg: "bg-rose-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CX', '20CX'] },
-            "Life Protector 20": { abbr: "LPB", desc: "เปลี่ยนทุนประกัน เป็นบำนาญ", icon: "fas fa-piggy-bank", color: "text-emerald-500", bg: "bg-emerald-100", uiMode: "TABLE", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
-            "Supreme Life Protector": { abbr: "SLPA", desc: "เปลี่ยนทุนประกัน เป็นบำนาญ", icon: "fas fa-piggy-bank", color: "text-emerald-500", bg: "bg-emerald-100", uiMode: "TABLE", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
-            "Signature Legacy": { abbr: "SLB", desc: "แผนมรดก ลูกค้ามูลค่าสูง", icon: "fas fa-crown", color: "text-amber-500", bg: "bg-amber-100", uiMode: "TABLE", defaultSum: 5000000, actionBtnText: "ตารางมูลค่า", planOptions: ['5SLB', '10SLB'] },
-            "Convertable Term": { abbr: "TLA", desc: "จองสิทธิ เปลี่ยนแบบประกันได้", icon: "fas fa-umbrella", color: "text-blue-500", bg: "bg-blue-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: [] },
-            "Century Life + TPD": { abbr: "CLA", desc: "แผนมรดก 100 ปี + TPD", icon: "fas fa-gem", color: "text-amber-500", bg: "bg-amber-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CL', '20CL', '60CL', '90CL'] },
-            "3D Health Excellence": { abbr: "3D", desc: "ประกันสุขภาพ ที่เข้าใจทุกช่วงชีวิต", icon: "fas fa-hand-holding-medical", color: "text-teal-500", bg: "bg-teal-100", uiMode: "POPUP_3D", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CL', '20CL', '60CL', '90CL'] },
-            "Whole Life Extra": { abbr: "WXN", desc: "สินทรัพย์กระแสเงินสด", icon: "fas fa-money-bill-trend-up", color: "text-indigo-500", bg: "bg-indigo-100", uiMode: "TABLE_CASHFLOW", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: ['WXN10', 'WXN15'] },
-            "24 TX": { abbr: "TX", desc: "สินทรัพย์กระแสเงินสด", icon: "fas fa-money-bill-trend-up", color: "text-indigo-500", bg: "bg-indigo-100", uiMode: "TABLE_CASHFLOW", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
-            "868 / 818 Elite Saving": { abbr: "Elite", desc: "สินทรัพย์กระแสเงินสด", icon: "fas fa-money-bill-trend-up", color: "text-indigo-500", bg: "bg-indigo-100", uiMode: "TABLE_CASHFLOW", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] }
-        };
-        const ACTIVE_DB = typeof INSURANCE_CONFIG !== 'undefined' ? INSURANCE_CONFIG : DEFAULT_CONFIG;
-    </script>
 </head>
 <body>
     <div class="app-container">
         <div class="ambient-bg"><div class="ambient-glow-1"></div><div class="ambient-glow-2"></div></div>
         
-        <!-- ==================== VIEW 1: MAIN FORM ==================== -->
         <div id="mainView" class="flex flex-col flex-1 overflow-hidden w-full relative z-10">
             <div class="w-full z-20 pt-safe px-4 pb-0 shrink-0 relative mt-1.5">
                 <button id="mainHeaderBtn" onclick="openPlanModal()" class="w-full bg-gradient-to-br from-[#243c94] via-[#2a45a3] to-[#1e327a] rounded-[24px] py-4 px-4 flex flex-col items-center justify-center shadow-[0_10px_25px_rgba(36,60,148,0.3)] border border-[#60a5fa]/30 active:scale-[0.97] transition-all relative overflow-hidden group">
@@ -104,16 +84,14 @@
                             <button onclick="adjustAge(1)" class="w-12 h-full flex items-center justify-center text-slate-400 hover:text-blue-600 rounded-[14px] hover:bg-slate-50"><i class="fas fa-plus text-[14px]"></i></button>
                         </div>
                     </div>
-
-                    <!-- จุดที่แก้ไข: แถบเลือกแผนประกัน ถ้าไม่มีแผนย่อยให้ลบออกไปเลย (innerHTML = '') -->
-                    <div id="planSelectionWrapper" style="display: none;" class="shrink-0 mt-1">
+                    
+                    <div id="planSelectionWrapper" class="shrink-0 hidden">
                         <div class="premium-card !p-1.5">
                             <div id="planSelectionContainer" class="flex gap-2"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3D Options Container (แสดงเฉพาะแผน 3D) -->
                 <div id="threeDExtraOptions" class="hidden flex-col gap-3 shrink-0 mt-3">
                     <div class="premium-card !p-2">
                         <p class="text-slate-400 text-[10px] font-bold mb-1 text-center uppercase">เลือกแผนหลัก 3D (HX)</p>
@@ -142,7 +120,6 @@
                     </div>
                 </div>
 
-                <!-- Sum Insured -->
                 <div class="premium-card shrink-0 mt-3" id="sumInsuredContainer">
                     <div class="flex justify-between items-center mb-3">
                         <p id="sumInsuredLabel" class="text-slate-600 text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-shield-halved text-emerald-500"></i> วงเงินคุ้มครอง (บาท)</p>
@@ -154,7 +131,6 @@
                     </div>
                 </div>
 
-                <!-- Premium -->
                 <div class="premium-card shrink-0 mt-3" id="premiumContainer">
                     <div class="flex justify-between items-center mb-3">
                         <p class="text-slate-600 text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-wallet text-blue-500"></i> เบี้ยประกันรวม</p>
@@ -166,7 +142,6 @@
                     </div>
                 </div>
 
-                <!-- Cash Flow -->
                 <div class="premium-card shrink-0 hidden mt-3 border-emerald-200 bg-emerald-50/30" id="cashFlowContainer">
                     <div class="flex justify-between items-center mb-2.5"><p class="text-emerald-700 text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-money-bill-trend-up"></i> กระแสเงินสด (บาท/ปี)</p></div>
                     <div class="quick-pill-container bg-emerald-100/50 mb-3">
@@ -188,7 +163,6 @@
                     </button>
                 </div>
 
-                <!-- กรอบสีแดง: จะแสดงอยู่เสมอ 100% -->
                 <div id="bottomActionGroup" class="mt-4">
                     <div class="grid grid-cols-2 gap-3">
                         <button class="w-full bg-white border border-slate-200 text-slate-700 h-[48px] rounded-[16px] text-[14px] font-bold flex items-center justify-center gap-2 shadow-sm active:bg-slate-50">
@@ -205,7 +179,6 @@
             </div>
         </div>
 
-        <!-- ==================== VIEW 2: TABLE ==================== -->
         <div id="tableView" class="hidden flex flex-col flex-1 overflow-hidden w-full relative z-10">
             <div class="glass-header flex justify-between items-center px-4 pt-safe pb-3 shrink-0 border-b border-slate-200 mt-1">
                 <h3 id="tableHeaderTitle" class="text-[14px] font-black text-slate-800 leading-tight truncate w-[75%]"></h3>
@@ -219,7 +192,6 @@
             </div>
         </div>
 
-        <!-- ==================== VIEW 3: CASH ==================== -->
         <div id="cashView" class="hidden flex flex-col flex-1 overflow-hidden w-full relative z-10">
             <div class="w-full z-20 pt-safe px-4 pb-1 shrink-0 relative mt-2 text-center">
                 <div class="bg-gradient-to-br from-[#243c94] to-[#1e327a] rounded-[24px] py-4 shadow-lg">
@@ -234,17 +206,15 @@
             </div>
         </div>
 
-        <!-- ==================== BOTTOM NAV ==================== -->
         <div class="absolute bottom-0 left-0 right-0 z-50 flex flex-col items-center pt-8 pb-safe bg-gradient-to-t from-[#f4f7fb] to-transparent pointer-events-none">
             <div class="glass-nav rounded-[20px] flex justify-around items-center px-2 py-1.5 pointer-events-auto w-[calc(100%-2rem)] max-w-[400px]">
-                <button class="nav-item active flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('main', this)"><i class="fas fa-calculator text-[20px]"></i><span class="text-[9px] font-bold">คำนวณ</span></button>
-                <button class="nav-item flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('table', this)"><i class="fas fa-table-list text-[20px]"></i><span class="text-[9px] font-bold">ตาราง</span></button>
-                <button class="nav-item flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('cash', this)"><i class="fas fa-money-bill-trend-up text-[20px]"></i><span class="text-[9px] font-bold">คอมมิชชัน</span></button>
+                <button class="nav-item active flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('main')"><i class="fas fa-calculator text-[20px]"></i><span class="text-[9px] font-bold">คำนวณ</span></button>
+                <button class="nav-item flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('table')"><i class="fas fa-table-list text-[20px]"></i><span class="text-[9px] font-bold">ตาราง</span></button>
+                <button class="nav-item flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('cash')"><i class="fas fa-money-bill-trend-up text-[20px]"></i><span class="text-[9px] font-bold">คอมมิชชัน</span></button>
             </div>
         </div>
     </div>
     
-    <!-- ==================== DYNAMIC MODALS ==================== -->
     <div id="planSelectModal" class="modal-overlay">
         <div class="modal-content-card h-[80vh]">
             <div class="p-5 border-b flex justify-between items-center bg-slate-50">
@@ -255,7 +225,6 @@
         </div>
     </div>
 
-    <!-- JS ENGINE LOGIC -->
     <script>
         const setText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
         const formatNum = (num) => { const rounded = Math.round(num * 100) / 100; return Number.isInteger(rounded) ? rounded.toLocaleString() : rounded.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
@@ -263,7 +232,7 @@
         let currentAppPlan = "Life Protector 20";
         let currentPlan = '', currentGender = 'male', lastCalculationData = null, currentMode = 'sum';
         
-        function getActiveConfig() { return ACTIVE_DB[currentAppPlan]; }
+        function getActiveConfig() { return INSURANCE_CONFIG[currentAppPlan]; }
         function openPopup(id) { const modal = document.getElementById(id); if (modal) { modal.classList.remove('hidden'); setTimeout(() => { modal.classList.add('show'); }, 10); } }
         function closePopup(id) { const modal = document.getElementById(id); if (modal) { modal.classList.remove('show'); setTimeout(() => { modal.classList.add('hidden'); }, 300); } }
         
@@ -286,8 +255,8 @@
             const wrapper = document.getElementById('planSelectionWrapper');
             const container = document.getElementById('planSelectionContainer');
             
-            if(container && config.planOptions && config.planOptions.length > 1) {
-                wrapper.style.display = 'block'; // แสดงกล่องถ้ามีปุ่มให้เลือก
+            if(container && config.planOptions && config.planOptions.length > 0) {
+                wrapper.style.display = 'block'; // แสดงกล่องแผน
                 container.className = config.planOptions.length > 2 ? 'grid grid-cols-2 gap-2 w-full' : 'flex gap-2 w-full';
                 container.innerHTML = config.planOptions.map(p => {
                     const isTarget = p === currentPlan;
@@ -295,24 +264,23 @@
                     return `<button onclick="setPlan('${p}')" class="${btnClass}">${p}</button>`;
                 }).join('');
             } else {
-                // *** จุดสำคัญ: ลบค่าใน DOM และซ่อนกล่องทิ้งไปเลยสำหรับแผนที่ไม่มีตัวเลือก (เช่น LPB, 24TX) ***
+                // ลบกล่องเลือกแผนทิ้งไปเลยสำหรับแผนที่ไม่มีตัวเลือกย่อย
                 wrapper.style.display = 'none';
                 if (container) container.innerHTML = ''; 
             }
             calculate('sum'); 
         }
 
-        // ================= ENGINE CALCULATE =================
         function calculate(source = currentMode) { 
             currentMode = source;
             const config = getActiveConfig();
             const age = parseInt(document.getElementById('ageInput').value) || 0; 
             
             let baseRate = 0, hxPrem = 0; 
+            let planKey = currentPlan || currentAppPlan; // ใช้ชื่อแผน หรือ ชื่อแอปหลัก
             
-            // รอรับข้อมูล Rate จริงจาก config.js
-            if(typeof BASE_RATES !== 'undefined' && BASE_RATES[currentPlan] && BASE_RATES[currentPlan][currentGender]) {
-                baseRate = BASE_RATES[currentPlan][currentGender][age] || 0;
+            if(typeof BASE_RATES !== 'undefined' && BASE_RATES[planKey] && BASE_RATES[planKey][currentGender]) {
+                baseRate = BASE_RATES[planKey][currentGender][age] || 0;
             }
 
             let fSum = 0, fPrem = 0; 
@@ -357,9 +325,9 @@
 
         function renderUnifiedPlanList() {
             const container = document.getElementById('unifiedPlanList');
-            const keys = Object.keys(ACTIVE_DB);
+            const keys = Object.keys(INSURANCE_CONFIG);
             container.innerHTML = keys.map(key => {
-                const p = ACTIVE_DB[key];
+                const p = INSURANCE_CONFIG[key];
                 const isActive = key === currentAppPlan;
                 const cardClass = isActive ? 'border-blue-400 bg-blue-50' : 'border-transparent bg-white hover:bg-slate-50 shadow-sm';
                 return `
@@ -419,7 +387,6 @@
             calculate('sum'); 
         }
 
-        // เริ่มต้นแอป
         window.onload = () => { selectAppPlan("Life Protector 20"); };
     </script>
 </body>
