@@ -56,8 +56,10 @@
         @keyframes gold-shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
         .text-shine-gold { background: linear-gradient(120deg, #fef08a 20%, #ffffff 40%, #ffffff 60%, #fef08a 80%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: gold-shine 3s linear infinite; }
     </style>
+    <!-- โหลดข้อมูลจาก config.js -->
     <script src="config.js"></script>
     <script>
+        // Fallback Database in case config.js is not loaded
         const DEFAULT_CONFIG = {
             "CI Extra Plus": { abbr: "CX", desc: "ออมเงิน : ชดเชยโรคร้าย+วงเงินพิเศษ", icon: "fas fa-shield-heart", color: "text-rose-500", bg: "bg-rose-100", uiMode: "POPUP", defaultSum: 1000000, actionBtnText: "ดูรายละเอียด", planOptions: ['10CX', '20CX'] },
             "Life Protector 20": { abbr: "LPB", desc: "เปลี่ยนทุนประกัน เป็นบำนาญ", icon: "fas fa-piggy-bank", color: "text-emerald-500", bg: "bg-emerald-100", uiMode: "TABLE", defaultSum: 1000000, actionBtnText: "ตารางมูลค่า", planOptions: [] },
@@ -77,6 +79,7 @@
     <div class="app-container">
         <div class="ambient-bg"><div class="ambient-glow-1"></div><div class="ambient-glow-2"></div></div>
         
+        <!-- ==================== VIEW 1: MAIN FORM ==================== -->
         <div id="mainView" class="flex flex-col flex-1 overflow-hidden w-full relative z-10">
             <div class="w-full z-20 pt-safe px-4 pb-0 shrink-0 relative mt-1.5">
                 <button id="mainHeaderBtn" onclick="openPlanModal()" class="w-full bg-gradient-to-br from-[#243c94] via-[#2a45a3] to-[#1e327a] rounded-[24px] py-4 px-4 flex flex-col items-center justify-center shadow-[0_10px_25px_rgba(36,60,148,0.3)] border border-[#60a5fa]/30 active:scale-[0.97] transition-all relative overflow-hidden group">
@@ -101,13 +104,16 @@
                             <button onclick="adjustAge(1)" class="w-12 h-full flex items-center justify-center text-slate-400 hover:text-blue-600 rounded-[14px] hover:bg-slate-50"><i class="fas fa-plus text-[14px]"></i></button>
                         </div>
                     </div>
-                    <div id="planSelectionWrapper" class="shrink-0 hidden">
+
+                    <!-- จุดที่แก้ไข: แถบเลือกแผนประกัน ถ้าไม่มีแผนย่อยให้ลบออกไปเลย (innerHTML = '') -->
+                    <div id="planSelectionWrapper" style="display: none;" class="shrink-0 mt-1">
                         <div class="premium-card !p-1.5">
                             <div id="planSelectionContainer" class="flex gap-2"></div>
                         </div>
                     </div>
                 </div>
 
+                <!-- 3D Options Container (แสดงเฉพาะแผน 3D) -->
                 <div id="threeDExtraOptions" class="hidden flex-col gap-3 shrink-0 mt-3">
                     <div class="premium-card !p-2">
                         <p class="text-slate-400 text-[10px] font-bold mb-1 text-center uppercase">เลือกแผนหลัก 3D (HX)</p>
@@ -129,4 +135,292 @@
                             <p class="text-slate-400 text-[10px] font-bold mb-1 text-center uppercase">เลือก Advance (HXD)</p>
                             <select id="advanceSelect" class="w-full h-[36px] bg-blue-50 text-blue-700 border-blue-100 rounded-[10px] font-bold text-sm text-center outline-none" onchange="calculate('sum')">
                                 <option value="none">ไม่เลือก</option>
-                                <option value="HXD10
+                                <option value="HXD100">HXD100</option><option value="HXD200">HXD200</option>
+                                <option value="HXD500">HXD500</option><option value="HXD1000">HXD1000</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sum Insured -->
+                <div class="premium-card shrink-0 mt-3" id="sumInsuredContainer">
+                    <div class="flex justify-between items-center mb-3">
+                        <p id="sumInsuredLabel" class="text-slate-600 text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-shield-halved text-emerald-500"></i> วงเงินคุ้มครอง (บาท)</p>
+                    </div>
+                    <div class="quick-pill-container mb-3" id="sumQuickPills"></div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">฿</span>
+                        <input type="text" id="sumInsuredInput" value="1,000,000" class="input-box-rounded pl-8" oninput="handleCurrencyInput(this, 'sum')">
+                    </div>
+                </div>
+
+                <!-- Premium -->
+                <div class="premium-card shrink-0 mt-3" id="premiumContainer">
+                    <div class="flex justify-between items-center mb-3">
+                        <p class="text-slate-600 text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-wallet text-blue-500"></i> เบี้ยประกันรวม</p>
+                    </div>
+                    <div id="premiumPillContainer" class="quick-pill-container mb-3"></div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">฿</span>
+                        <input type="text" id="premiumInput" class="input-box-rounded pl-8 text-blue-700" value="0" oninput="handleCurrencyInput(this, 'premium')">
+                    </div>
+                </div>
+
+                <!-- Cash Flow -->
+                <div class="premium-card shrink-0 hidden mt-3 border-emerald-200 bg-emerald-50/30" id="cashFlowContainer">
+                    <div class="flex justify-between items-center mb-2.5"><p class="text-emerald-700 text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-money-bill-trend-up"></i> กระแสเงินสด (บาท/ปี)</p></div>
+                    <div class="quick-pill-container bg-emerald-100/50 mb-3">
+                        <button onclick="setQuickCashFlow(50000)" class="quick-pill hover:bg-emerald-200">5 หมื่น</button>
+                        <button onclick="setQuickCashFlow(100000)" class="quick-pill hover:bg-emerald-200">1 แสน</button>
+                        <button onclick="setQuickCashFlow(120000)" class="quick-pill hover:bg-emerald-200 text-emerald-700 font-black">1.2 แสน</button>
+                        <button onclick="setQuickCashFlow(300000)" class="quick-pill hover:bg-emerald-200">3 แสน</button>
+                        <button onclick="setQuickCashFlow(500000)" class="quick-pill hover:bg-emerald-200">5 แสน</button>
+                    </div>
+                    <div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-lg">฿</span><input type="text" id="cashFlowInput" value="120,000" class="input-box-rounded pl-8 text-emerald-700 bg-white" oninput="handleCurrencyInput(this, 'cashflow')"></div>
+                </div>
+                
+                <div class="mt-4 grid grid-cols-4 gap-3">
+                    <button id="mainActionBtn" onclick="mainActionTrigger()" class="col-span-3 w-full btn-primary h-[54px] font-bold flex justify-center items-center gap-2 text-[16px]">
+                        <i class="fas fa-table text-lg"></i> ตารางมูลค่า
+                    </button>
+                    <button class="col-span-1 w-full h-[54px] bg-gradient-to-br from-emerald-400 to-teal-600 text-white rounded-[16px] font-bold flex flex-col justify-center items-center text-[12px] shadow-[0_8px_15px_rgba(16,185,129,0.3)]">
+                        <i class="fas fa-share-nodes text-[20px]"></i><span>แชร์</span>
+                    </button>
+                </div>
+
+                <!-- กรอบสีแดง: จะแสดงอยู่เสมอ 100% -->
+                <div id="bottomActionGroup" class="mt-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="w-full bg-white border border-slate-200 text-slate-700 h-[48px] rounded-[16px] text-[14px] font-bold flex items-center justify-center gap-2 shadow-sm active:bg-slate-50">
+                            <i class="fas fa-credit-card text-blue-500"></i> ตัวเลือกชำระ
+                        </button>
+                        <button class="w-full bg-white border border-slate-200 text-slate-700 h-[48px] rounded-[16px] text-[14px] font-bold flex items-center justify-center gap-2 shadow-sm active:bg-slate-50">
+                            <i class="fas fa-building-columns text-emerald-500"></i> บัญชีโอนเงิน
+                        </button>
+                    </div>
+                    <button class="w-full mt-3 bg-white border border-rose-100 text-rose-700 h-[48px] rounded-[16px] text-[14px] font-bold flex items-center justify-center gap-2 shadow-sm hover:bg-rose-50 active:scale-95 transition-transform">
+                        <i class="fas fa-laptop-code"></i> E-Submission & QNI <i class="fas fa-chevron-right text-[10px] ml-1 opacity-50"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 2: TABLE ==================== -->
+        <div id="tableView" class="hidden flex flex-col flex-1 overflow-hidden w-full relative z-10">
+            <div class="glass-header flex justify-between items-center px-4 pt-safe pb-3 shrink-0 border-b border-slate-200 mt-1">
+                <h3 id="tableHeaderTitle" class="text-[14px] font-black text-slate-800 leading-tight truncate w-[75%]"></h3>
+                <button class="bg-red-50 text-red-600 px-3 py-1.5 rounded-xl text-[11px] font-bold"><i class="fas fa-file-pdf"></i> PDF</button>
+            </div>
+            <div class="flex-1 min-h-0 flex flex-col bg-white/60 overflow-y-auto custom-scrollbar pb-[110px]" id="pdfTableTarget">
+                <table class="w-full text-[12px] text-center border-collapse">
+                    <thead class="sticky top-0 z-30 bg-slate-50/90 shadow-sm" id="policyTableHead"></thead>
+                    <tbody id="policyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 3: CASH ==================== -->
+        <div id="cashView" class="hidden flex flex-col flex-1 overflow-hidden w-full relative z-10">
+            <div class="w-full z-20 pt-safe px-4 pb-1 shrink-0 relative mt-2 text-center">
+                <div class="bg-gradient-to-br from-[#243c94] to-[#1e327a] rounded-[24px] py-4 shadow-lg">
+                    <h3 class="text-[24px] font-black text-shine-gold leading-none">CASH</h3>
+                    <p class="text-[9px] text-amber-100 uppercase tracking-widest mt-1">Commission & Bonus</p>
+                </div>
+            </div>
+            <div class="flex-1 px-4 py-3 overflow-y-auto pb-[110px]">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4" id="comList">
+                    <p class="text-center text-slate-400 font-bold py-10">รอข้อมูลอัตราคอมมิชชั่นจาก Config...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM NAV ==================== -->
+        <div class="absolute bottom-0 left-0 right-0 z-50 flex flex-col items-center pt-8 pb-safe bg-gradient-to-t from-[#f4f7fb] to-transparent pointer-events-none">
+            <div class="glass-nav rounded-[20px] flex justify-around items-center px-2 py-1.5 pointer-events-auto w-[calc(100%-2rem)] max-w-[400px]">
+                <button class="nav-item active flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('main', this)"><i class="fas fa-calculator text-[20px]"></i><span class="text-[9px] font-bold">คำนวณ</span></button>
+                <button class="nav-item flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('table', this)"><i class="fas fa-table-list text-[20px]"></i><span class="text-[9px] font-bold">ตาราง</span></button>
+                <button class="nav-item flex flex-col items-center py-1 w-1/4 text-slate-400" onclick="switchView('cash', this)"><i class="fas fa-money-bill-trend-up text-[20px]"></i><span class="text-[9px] font-bold">คอมมิชชัน</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ==================== DYNAMIC MODALS ==================== -->
+    <div id="planSelectModal" class="modal-overlay">
+        <div class="modal-content-card h-[80vh]">
+            <div class="p-5 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="text-xl font-bold">เลือกแบบประกัน</h3>
+                <button onclick="closePopup('planSelectModal')" class="text-xl font-black text-slate-400 hover:text-red-500">&times;</button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 bg-slate-50" id="unifiedPlanList"></div>
+        </div>
+    </div>
+
+    <!-- JS ENGINE LOGIC -->
+    <script>
+        const setText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+        const formatNum = (num) => { const rounded = Math.round(num * 100) / 100; return Number.isInteger(rounded) ? rounded.toLocaleString() : rounded.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
+        
+        let currentAppPlan = "Life Protector 20";
+        let currentPlan = '', currentGender = 'male', lastCalculationData = null, currentMode = 'sum';
+        
+        function getActiveConfig() { return ACTIVE_DB[currentAppPlan]; }
+        function openPopup(id) { const modal = document.getElementById(id); if (modal) { modal.classList.remove('hidden'); setTimeout(() => { modal.classList.add('show'); }, 10); } }
+        function closePopup(id) { const modal = document.getElementById(id); if (modal) { modal.classList.remove('show'); setTimeout(() => { modal.classList.add('hidden'); }, 300); } }
+        
+        function handleCurrencyInput(el, source) { let v = el.value.replace(/,/g, '').split('.')[0]; if (!isNaN(v) && v !== '') { el.value = Number(v).toLocaleString(); if(source !== 'cashflow') calculate(source); } }
+        function setQuickSum(val) { document.getElementById('sumInsuredInput').value = val.toLocaleString(); calculate('sum'); }
+        function setQuickPremium(val) { document.getElementById('premiumInput').value = val.toLocaleString(); calculate('premium'); }
+        function setQuickCashFlow(val) { document.getElementById('cashFlowInput').value = val.toLocaleString(); }
+        function adjustAge(delta) { const input = document.getElementById('ageInput'); let val = parseInt(input.value) + delta; if (val >= 0 && val <= 65) { input.value = val; calculate('sum'); } }
+        
+        function setGender(gender) { 
+            currentGender = gender; 
+            document.getElementById('btnMale').className = gender === 'male' ? 'flex-1 rounded-[14px] text-[15px] font-bold active-male text-white transition-all' : 'flex-1 rounded-[14px] text-[15px] font-bold text-slate-500 hover:bg-slate-50 transition-all';
+            document.getElementById('btnFemale').className = gender === 'female' ? 'flex-1 rounded-[14px] text-[15px] font-bold active-female text-white transition-all' : 'flex-1 rounded-[14px] text-[15px] font-bold text-slate-500 hover:bg-slate-50 transition-all';
+            calculate('sum'); 
+        }
+
+        function setPlan(planId) { 
+            currentPlan = planId; 
+            const config = getActiveConfig();
+            const wrapper = document.getElementById('planSelectionWrapper');
+            const container = document.getElementById('planSelectionContainer');
+            
+            if(container && config.planOptions && config.planOptions.length > 1) {
+                wrapper.style.display = 'block'; // แสดงกล่องถ้ามีปุ่มให้เลือก
+                container.className = config.planOptions.length > 2 ? 'grid grid-cols-2 gap-2 w-full' : 'flex gap-2 w-full';
+                container.innerHTML = config.planOptions.map(p => {
+                    const isTarget = p === currentPlan;
+                    const btnClass = isTarget ? 'flex-1 rounded-[14px] text-[14px] font-bold active-blue text-white transition-all h-[38px]' : 'flex-1 rounded-[14px] text-[14px] font-bold text-slate-500 hover:bg-slate-50 transition-all border border-slate-100 h-[38px]';
+                    return `<button onclick="setPlan('${p}')" class="${btnClass}">${p}</button>`;
+                }).join('');
+            } else {
+                // *** จุดสำคัญ: ลบค่าใน DOM และซ่อนกล่องทิ้งไปเลยสำหรับแผนที่ไม่มีตัวเลือก (เช่น LPB, 24TX) ***
+                wrapper.style.display = 'none';
+                if (container) container.innerHTML = ''; 
+            }
+            calculate('sum'); 
+        }
+
+        // ================= ENGINE CALCULATE =================
+        function calculate(source = currentMode) { 
+            currentMode = source;
+            const config = getActiveConfig();
+            const age = parseInt(document.getElementById('ageInput').value) || 0; 
+            
+            let baseRate = 0, hxPrem = 0; 
+            
+            // รอรับข้อมูล Rate จริงจาก config.js
+            if(typeof BASE_RATES !== 'undefined' && BASE_RATES[currentPlan] && BASE_RATES[currentPlan][currentGender]) {
+                baseRate = BASE_RATES[currentPlan][currentGender][age] || 0;
+            }
+
+            let fSum = 0, fPrem = 0; 
+            if (source === 'sum') { 
+                fSum = parseFloat(document.getElementById('sumInsuredInput').value.replace(/,/g, '')) || 0; 
+                fPrem = Math.round((fSum / 1000) * baseRate) + hxPrem; 
+                document.getElementById('premiumInput').value = fPrem.toLocaleString(); 
+            } else { 
+                fPrem = parseFloat(document.getElementById('premiumInput').value.replace(/,/g, '')) || 50000; 
+                if(baseRate > 0) {
+                    fSum = Math.round(((fPrem - hxPrem) * 1000) / baseRate); 
+                }
+                document.getElementById('sumInsuredInput').value = formatNum(Math.max(0, fSum)); 
+            } 
+            
+            lastCalculationData = { premium: fPrem, sum: fSum, gender: currentGender, age: age }; 
+            return lastCalculationData; 
+        }
+
+        function mainActionTrigger() { 
+            const config = getActiveConfig();
+            if(config.uiMode.includes('TABLE')) {
+                switchView('table');
+            } else {
+                alert("ระบบเตรียมเปิดหน้าป๊อปอัปสำหรับ " + currentAppPlan + " (รอนำเข้าเทมเพลต)");
+            }
+        }
+
+        function switchView(targetView) {
+            const views = { 'main': document.getElementById('mainView'), 'table': document.getElementById('tableView'), 'cash': document.getElementById('cashView') };
+            const navBtns = document.querySelectorAll('.nav-item');
+            
+            Object.values(views).forEach(view => view.classList.add('hidden'));
+            navBtns.forEach(btn => btn.classList.remove('active'));
+            
+            if (views[targetView]) views[targetView].classList.remove('hidden');
+            
+            if(targetView === 'main') navBtns[0].classList.add('active');
+            if(targetView === 'table') navBtns[1].classList.add('active');
+            if(targetView === 'cash') navBtns[2].classList.add('active');
+        }
+
+        function renderUnifiedPlanList() {
+            const container = document.getElementById('unifiedPlanList');
+            const keys = Object.keys(ACTIVE_DB);
+            container.innerHTML = keys.map(key => {
+                const p = ACTIVE_DB[key];
+                const isActive = key === currentAppPlan;
+                const cardClass = isActive ? 'border-blue-400 bg-blue-50' : 'border-transparent bg-white hover:bg-slate-50 shadow-sm';
+                return `
+                <button onclick="selectAppPlan('${key}')" class="w-full flex items-center text-left p-3.5 rounded-[20px] border ${cardClass} mb-2">
+                    <div class="w-12 h-12 rounded-[14px] ${p.bg} ${p.color} flex items-center justify-center text-[20px] shrink-0 mr-4 shadow-inner"><i class="${p.icon}"></i></div>
+                    <div class="flex-1"><h4 class="text-[15px] font-bold text-slate-800">${key}</h4><p class="text-[11px] text-slate-500 font-medium">${p.desc}</p></div>
+                </button>`;
+            }).join('');
+        }
+
+        function openPlanModal() { renderUnifiedPlanList(); openPopup('planSelectModal'); }
+
+        function selectAppPlan(planName) {
+            closePopup('planSelectModal'); currentAppPlan = planName; 
+            const config = getActiveConfig();
+            
+            document.getElementById('headerTitleText').innerText = planName;
+
+            // 1. จัดการหน้าตา Cash Flow และ 3D Health
+            const isCashFlow = config.uiMode.includes('CASHFLOW');
+            const is3D = config.uiMode === 'POPUP_3D';
+            
+            document.getElementById('cashFlowContainer').classList.toggle('hidden', !isCashFlow);
+            document.getElementById('threeDExtraOptions').classList.toggle('hidden', !is3D);
+            document.getElementById('threeDExtraOptions').classList.toggle('flex', is3D);
+            
+            document.getElementById('sumInsuredLabel').innerHTML = is3D 
+                ? `<i class="fas fa-shield-halved text-emerald-500"></i> ทุนหลัก CL (บาท)`
+                : `<i class="fas fa-shield-halved text-emerald-500"></i> วงเงินคุ้มครอง (บาท)`;
+
+            // 2. เปลี่ยนคำที่ปุ่ม Action
+            document.getElementById('mainActionBtn').innerHTML = `<i class="fas ${config.uiMode.includes('TABLE') ? 'fa-table' : 'fa-file-alt'} text-lg"></i> ${config.actionBtnText}`;
+            
+            // 3. เซ็ตทุนเริ่มต้น
+            document.getElementById('sumInsuredInput').value = formatNum(config.defaultSum);
+            
+            // 4. เซ็ตเมนูย่อยของแผน
+            if(config.planOptions && config.planOptions.length > 0) {
+                setPlan(config.planOptions[0]);
+            } else {
+                setPlan(''); // สำหรับแผนที่ไม่มีตัวเลือก มันจะไปสั่งลบกล่องทิ้งที่ฟังก์ชัน setPlan ให้
+            }
+
+            // 5. ปุ่ม Quick Pills
+            const isHighValue = config.defaultSum >= 5000000;
+            const sumPillsHtml = isHighValue 
+                ? `<button onclick="setQuickSum(500000)" class="quick-pill">5 แสน</button><button onclick="setQuickSum(1000000)" class="quick-pill">1 ล้าน</button><button onclick="setQuickSum(5000000)" class="quick-pill">5 ล้าน</button><button onclick="setQuickSum(10000000)" class="quick-pill">10 ล้าน</button>`
+                : `<button onclick="setQuickSum(100000)" class="quick-pill">1 แสน</button><button onclick="setQuickSum(500000)" class="quick-pill">5 แสน</button><button onclick="setQuickSum(1000000)" class="quick-pill">1 ล้าน</button><button onclick="setQuickSum(3000000)" class="quick-pill">3 ล้าน</button>`;
+            
+            const premPillsHtml = isHighValue
+                ? `<button onclick="setQuickPremium(100000)" class="quick-pill">1 แสน</button><button onclick="setQuickPremium(200000)" class="quick-pill">2 แสน</button><button onclick="setQuickPremium(500000)" class="quick-pill">5 แสน</button><button onclick="setQuickPremium(1000000)" class="quick-pill">1 ล้าน</button>`
+                : `<button onclick="setQuickPremium(12000)" class="quick-pill">12,000</button><button onclick="setQuickPremium(24000)" class="quick-pill">24,000</button><button onclick="setQuickPremium(36000)" class="quick-pill">36,000</button><button onclick="setQuickPremium(48000)" class="quick-pill">48,000</button>`;
+
+            document.getElementById('sumQuickPills').innerHTML = sumPillsHtml;
+            document.getElementById('premiumPillContainer').innerHTML = premPillsHtml;
+
+            calculate('sum'); 
+        }
+
+        // เริ่มต้นแอป
+        window.onload = () => { selectAppPlan("Life Protector 20"); };
+    </script>
+</body>
+</html>
